@@ -26,14 +26,14 @@ def append_interstitial(supercell_info: SupercellInfo,
     (a_u, b_u, c_u) = (a_s, b_s, c_s) . trans_mat
     so, (a_s, b_s, c_s) = (a_u, b_u, c_u) . inv_trans_ma
     """
-    if supercell_info.unitcell_structure and \
-            supercell_info.unitcell_structure != unitcell_structure:
-        print(f"""Unitcell in the supercell_info.json
-{supercell_info.unitcell_structure}
-"-----------------------------------"
-"The given unitcell"
-{unitcell_structure}""")
-        raise NotPrimitiveError
+#     if supercell_info.unitcell_structure and \
+#             supercell_info.unitcell_structure != unitcell_structure:
+#         print(f"""Unitcell in the supercell_info.json
+# {supercell_info.unitcell_structure}
+# "-----------------------------------"
+# "The given unitcell"
+# {unitcell_structure}""")
+#         raise NotPrimitiveError
 
     if isinstance(frac_coords[0], float):
         frac_coords = [frac_coords]
