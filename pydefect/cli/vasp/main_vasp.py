@@ -148,6 +148,9 @@ def parse_args_main_vasp(args):
                     "directories",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         aliases=['de'])
+    parser_defect_entries.add_argument(
+        "-f", "--file", type=str, default="defect_in.yaml",
+        help="Defect input file.")
 
     parser_defect_entries.set_defaults(func=make_defect_entries)
 

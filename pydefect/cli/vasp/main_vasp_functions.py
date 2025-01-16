@@ -101,7 +101,7 @@ def make_defect_entries(args):
     except FileExistsError:
         logger.info(f"perfect dir exists, so skipped...")
 
-    defect_set = DefectSet.from_yaml()
+    defect_set = DefectSet.from_yaml(filename=args.file)
     maker = DefectEntriesMaker(supercell_info, defect_set)
 
     for defect_entry in maker.defect_entries:
