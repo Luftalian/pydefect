@@ -33,7 +33,7 @@ def append_interstitial(supercell_info: SupercellInfo,
 "-----------------------------------"
 "The given unitcell"
 {unitcell_structure}""")
-        raise NotPrimitiveError
+        # raise NotPrimitiveError
 
     if isinstance(frac_coords[0], float):
         frac_coords = [frac_coords]
