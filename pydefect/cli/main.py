@@ -13,7 +13,7 @@ from pydefect.chem_pot_diag.chem_pot_diag import StandardEnergies
 from pydefect.cli.main_functions import plot_defect_energy, \
     make_standard_and_relative_energies, make_cpd_and_vertices, \
     plot_chem_pot_diag, make_supercell, append_interstitial_to_supercell_info, \
-    pop_interstitial_from_supercell_info, make_defect_set, \
+    pop_interstitial_from_supercell_info, make_defect_set, make_complex_defect2_set, \
     make_efnv_correction_main_func, make_band_edge_states_main_func, \
     make_defect_energy_infos_main_func, make_defect_energy_summary_main_func, \
     calc_defect_structure_info, make_calc_summary_main_func
@@ -247,6 +247,21 @@ Here site_index is based on the given structure.
              "is used inside, Regular expression can be used. ")
 
     parser_defect_set.set_defaults(func=make_defect_set)
+
+    # -- Complex Defect2 Set ------------------------------------------------
+    parser_complex_defect2_set = subparsers.add_parser(
+        name="complex_defect2_set",
+        description="Make complex_defect2.yaml file for ComplexDefect2.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        aliases=['cds'])
+
+    parser_complex_defect2_set.add_argument(
+        "-d", "--defect_in_yaml", type=str, required=True,
+        help="Path to the defect_in.yaml file.")
+    parser_complex_defect2_set.add_argument(
+        "-c", "--candidacy", type=str, required=True,
+        help="Candidacy file name.")
+    parser_complex_defect2_set.set_defaults(func=make_complex_defect2_set)
 
     # -- defect structure info ------------------------------------------------
     parser_defect_structure_info = subparsers.add_parser(

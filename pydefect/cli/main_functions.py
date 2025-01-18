@@ -29,6 +29,9 @@ from pydefect.input_maker.defect_set_maker import DefectSetMaker
 from pydefect.input_maker.manual_supercell_maker import ManualSupercellMaker, \
     make_sites_from_yaml_file
 from pydefect.input_maker.supercell_maker import SupercellMaker
+from pydefect.input_maker.defect_set import DefectSet
+from pydefect.input_maker.complex_defect2_set import ComplexDefect2Set
+from pydefect.input_maker.complex_defect2_set_maker import ComplexDefect2SetMaker
 from pymatgen.analysis.phase_diagram import PDPlotter
 from pymatgen.core import Composition
 from vise.util.logger import get_logger
@@ -166,6 +169,13 @@ def make_defect_set(args):
                            args.dopants,
                            keywords=args.keywords)
     maker.defect_set.to_yaml()
+
+
+def make_complex_defect2_set(args):
+    defect_set = DefectSet.from_yaml(args.defect_in_yaml)
+    candidacy_defects_set = ComplexDefect2Set.from_yaml(args.candidacy)
+    maker = ComplexDefect2SetMaker(defect_set, candidacy_defects_set)
+    maker.complex_defect2_set.to_yaml()
 
 
 def calc_defect_structure_info(args):
