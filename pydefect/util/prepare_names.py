@@ -52,18 +52,32 @@ def prettify_names(d: Dict[str, Any], style) -> Dict[str, Any]:
     result = {}
     out_names = [name.split("_")[1] for name in d.keys()]
     for name, v in d.items():
-        in_name, out_name = name.split("_")
-        r_out_name = remove_digits(out_name)
-        out_name = r_out_name if f"{r_out_name}2" not in out_names else out_name
-        _name = "_".join([in_name, out_name])
+        if name.count("_") == 1:
+            in_name, out_name = name.split("_")
+            r_out_name = remove_digits(out_name)
+            out_name = r_out_name if f"{r_out_name}2" not in out_names else out_name
+            _name = "_".join([in_name, out_name])
+            if style == "mpl":
+                _name = defect_mpl_name(_name)
+        else:
+            try:
+                complex_suffix = name.split("complex_", 1)[1]
+            except IndexError:
+                raise ValueError(f"Invalid complex key format: {name}")
+            defects = complex_suffix.split("+")
+            last_defect_parts = defects[-1].split("_")
+            if len(last_defect_parts) < 3:
+                raise ValueError(f"Invalid defect format in key: {name}")
+            trailing_part = "_".join(last_defect_parts[2:])
+            defects[-1] = f"{last_defect_parts[0]}_{last_defect_parts[1]}"
+            prettified_defects = [defect_mpl_name(defect) for defect in defects]
+            _name = "+".join(prettified_defects) + f"_{trailing_part}"
         if _name in result:
             raise ValueError("The prettified names are conflicted. "
                              "Change the defect names, please.")
         if style is None:
             pass
-        elif style == "mpl":
-            _name = defect_mpl_name(_name)
-        else:
+        if style not in (None, "mpl"):
             raise ValueError(f"Style {style} is not adequate. Set mpl or None.")
         result[_name] = v
     return result
