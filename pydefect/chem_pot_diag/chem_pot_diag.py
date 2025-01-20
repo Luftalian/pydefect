@@ -407,7 +407,21 @@ def change_element_sequence(cpd: ChemPotDiag,
                              f"Input elements {element_sequence}")
     else:
         if cpd.target:
-            element_sequence = [str(e) for e in Composition(cpd.target).elements]
+            target_element_sequence = [str(e) for e in Composition(cpd.target).elements]
+            if set(cpd.vertex_elements) == set(target_element_sequence):
+                element_sequence = cpd.vertex_elements
+            elif set(cpd.vertex_elements) > set(target_element_sequence):
+                element_sequence = cpd.vertex_elements
+                logger.warning(f"CPD elements are "
+                               f"superset of Original elements {target_element_sequence}.")
+            elif set(target_element_sequence) > set(cpd.vertex_elements):
+                element_sequence = target_element_sequence
+                logger.warning(f"CPD elements are "
+                               f"subset of Target Composite elements {target_element_sequence}.")
+            else:
+                raise ValueError(f"Original elements {cpd.vertex_elements}. "
+                                 f"Target Composite elements {target_element_sequence}. "
+                                 f"Target Composite elements must be subset of Original elements.")
         else:
             return result
 
