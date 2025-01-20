@@ -60,6 +60,9 @@ def prettify_names(d: Dict[str, Any], style) -> Dict[str, Any]:
             if style == "mpl":
                 _name = defect_mpl_name(_name)
         else:
+            """
+            "complex_Va_O1+Mg_i1_O_3_1" -> "$V_{{\rm O}1}-{\rm Mg}_{i1}$"
+            """
             try:
                 complex_suffix = name.split("complex_", 1)[1]
             except IndexError:
@@ -68,10 +71,9 @@ def prettify_names(d: Dict[str, Any], style) -> Dict[str, Any]:
             last_defect_parts = defects[-1].split("_")
             if len(last_defect_parts) < 3:
                 raise ValueError(f"Invalid defect format in key: {name}")
-            trailing_part = "_".join(last_defect_parts[2:])
             defects[-1] = f"{last_defect_parts[0]}_{last_defect_parts[1]}"
             prettified_defects = [defect_mpl_name(defect) for defect in defects]
-            _name = "+".join(prettified_defects) + f"_{trailing_part}"
+            _name = "-".join(prettified_defects)
         if _name in result:
             raise ValueError("The prettified names are conflicted. "
                              "Change the defect names, please.")
