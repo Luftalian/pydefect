@@ -72,7 +72,7 @@ class ComplexDefect2SetMaker:
                 )
 
                 # Generate a unique name for the complex defect
-                unique_name = "complex_" + "_".join(
+                unique_name = "complex_" + "+".join(
                     f"{sd.in_atom}_{sd.out_atom}" if sd.in_atom is not None else f"Va_{sd.out_atom}" for sd in sorted_defects
                 )
 
