@@ -56,10 +56,11 @@ class ComplexDefect2SetMaker:
             simple_defects_combinations: List[List[SimpleDefect]] = [
                 [] for _ in candidate_defect.sub_defects
             ]
-
             # Populate simple_defects_combinations with matching simple defects
             for idx, sub_defect in enumerate(candidate_defect.sub_defects):
                 matching_defects = self._get_matching_defects(sub_defect)
+                if not matching_defects:
+                    raise ValueError(f"No matching defects found for {sub_defect}.")
                 simple_defects_combinations[idx].extend(matching_defects)
 
             # Generate all possible combinations of simple defects
