@@ -4,20 +4,62 @@
 
 import argparse
 import sys
-import warnings
 from pathlib import Path
 
-from pydefect.cli.main import epilog, description, add_sub_parser, dirs_parsers
-from pydefect.cli.vasp.main_vasp_functions import make_defect_entries, \
-    make_unitcell, make_competing_phase_dirs, \
-    make_calc_results, \
-    make_band_edge_orb_infos_and_eigval_plot, make_perfect_band_edge_state, \
-    make_local_extrema, make_composition_energies
+from pydefect.cli.main import epilog, description, add_sub_parser, dirs_parsers, setup_warnings
 from pydefect.defaults import defaults
-from pymatgen.io.vasp import Vasprun, Outcar, Chgcar
-from pymatgen.io.vasp.inputs import UnknownPotcarWarning
 
-warnings.simplefilter('ignore', UnknownPotcarWarning)
+def lazy_vasprun(args):
+    from pymatgen.io.vasp import Vasprun
+    return Vasprun(args)
+
+def lazy_outcar(args):
+    from pymatgen.io.vasp import Outcar
+    return Outcar(args)
+
+def lazy_chgcar(path):
+    from pymatgen.io.vasp import Chgcar
+    return Chgcar.from_file(path)
+
+def wrapped_make_defect_entries(args):
+    setup_warnings()
+    from pydefect.cli.vasp.main_vasp_functions import make_defect_entries
+    return make_defect_entries(args)
+
+def wrapped_make_unitcell(args):
+    setup_warnings()
+    from pydefect.cli.vasp.main_vasp_functions import make_unitcell
+    return make_unitcell(args)
+
+def wrapped_make_competing_phase_dirs(args):
+    setup_warnings()
+    from pydefect.cli.vasp.main_vasp_functions import make_competing_phase_dirs
+    return make_competing_phase_dirs(args)
+
+def wrapped_make_calc_results(args):
+    setup_warnings()
+    from pydefect.cli.vasp.main_vasp_functions import make_calc_results
+    return make_calc_results(args)
+
+def wrapped_make_band_edge_orb_infos_and_eigval_plot(args):
+    setup_warnings()
+    from pydefect.cli.vasp.main_vasp_functions import make_band_edge_orb_infos_and_eigval_plot
+    return make_band_edge_orb_infos_and_eigval_plot(args)
+
+def wrapped_make_perfect_band_edge_state(args):
+    setup_warnings()
+    from pydefect.cli.vasp.main_vasp_functions import make_perfect_band_edge_state
+    return make_perfect_band_edge_state(args)
+
+def wrapped_make_local_extrema(args):
+    setup_warnings()
+    from pydefect.cli.vasp.main_vasp_functions import make_local_extrema
+    return make_local_extrema(args)
+
+def wrapped_make_composition_energies(args):
+    setup_warnings()
+    from pydefect.cli.vasp.main_vasp_functions import make_composition_energies
+    return make_composition_energies(args)
 
 
 def parse_args_main_vasp(args):
@@ -40,22 +82,22 @@ def parse_args_main_vasp(args):
         aliases=['u'])
 
     parser_unitcell.add_argument(
-        "-vb", "--vasprun_band", required=True, type=Vasprun,
+        "-vb", "--vasprun_band", required=True, type=lazy_vasprun,
         help="vasprun.xml file of band structure calculation.")
     parser_unitcell.add_argument(
-        "-ob", "--outcar_band", required=True, type=Outcar,
+        "-ob", "--outcar_band", required=True, type=lazy_outcar,
         help="OUTCAR file of band structure calculation.")
     parser_unitcell.add_argument(
-        "-odc", "--outcar_dielectric_clamped", required=True, type=Outcar,
+        "-odc", "--outcar_dielectric_clamped", required=True, type=lazy_outcar,
         help="OUTCAR file of ion-clamped dielectric constant calculation.")
     parser_unitcell.add_argument(
-        "-odi", "--outcar_dielectric_ionic", required=True, type=Outcar,
+        "-odi", "--outcar_dielectric_ionic", required=True, type=lazy_outcar,
         help="OUTCAR file for calculating dielectric constant of ionic "
              "contribution.")
     parser_unitcell.add_argument(
         "-n", "--name", type=str,
         help="System name used for plotting defect formation energies.")
-    parser_unitcell.set_defaults(func=make_unitcell)
+    parser_unitcell.set_defaults(func=wrapped_make_unitcell)
 
     # -- make_poscars ------------------------------------------------
     parser_make_poscars = subparsers.add_parser(
@@ -72,7 +114,7 @@ def parse_args_main_vasp(args):
         "--e_above_hull", default=defaults.e_above_hull, type=float,
         help="Allowed energy above hull in eV/atom.")
 
-    parser_make_poscars.set_defaults(func=make_competing_phase_dirs)
+    parser_make_poscars.set_defaults(func=wrapped_make_competing_phase_dirs)
 
     # -- make_composition_energies ---------------------------------------------
     parser_make_composition_energies = subparsers.add_parser(
@@ -88,7 +130,7 @@ def parse_args_main_vasp(args):
         help="composition_energies.yaml to be overwritten.")
 
     parser_make_composition_energies.set_defaults(
-        func=make_composition_energies)
+        func=wrapped_make_composition_energies)
 
     # -- make_local_extrema ----------------------------------------------------
     parser_make_local_extrema = subparsers.add_parser(
@@ -98,7 +140,7 @@ def parse_args_main_vasp(args):
         aliases=['le'])
 
     parser_make_local_extrema.add_argument(
-        "-v", "--volumetric_data", type=Chgcar.from_file, required=True,
+        "-v", "--volumetric_data", type=lazy_chgcar, required=True,
         nargs="+",
         help="File names such as CHGCAR or LOCPOT. When multiple files are "
              "provided, the summed data (e.g., AECCAR0 + AECCAR2) will be "
@@ -140,7 +182,7 @@ def parse_args_main_vasp(args):
         help="Radius of sphere around each site to evaluate the average "
              "quantity.")
 
-    parser_make_local_extrema.set_defaults(func=make_local_extrema)
+    parser_make_local_extrema.set_defaults(func=wrapped_make_local_extrema)
     # -- defect_entries ------------------------------------------------
     parser_defect_entries = subparsers.add_parser(
         name="defect_entries",
@@ -152,7 +194,7 @@ def parse_args_main_vasp(args):
         "-f", "--file", type=str, default="defect_in.yaml",
         help="Defect input file.")
 
-    parser_defect_entries.set_defaults(func=make_defect_entries)
+    parser_defect_entries.set_defaults(func=wrapped_make_defect_entries)
 
     # -- calc_results ------------------------------------------------
     parser_calc_results = subparsers.add_parser(
@@ -162,7 +204,7 @@ def parse_args_main_vasp(args):
         parents=dirs_parsers,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         aliases=['cr'])
-    parser_calc_results.set_defaults(func=make_calc_results)
+    parser_calc_results.set_defaults(func=wrapped_make_calc_results)
 
     # -- perfect band edge state  ----------------------------------------------
     parser_perf_band_edge_state = subparsers.add_parser(
@@ -175,7 +217,7 @@ def parse_args_main_vasp(args):
         "-d", "--dir", type=Path,
         help="Directory path to the perfect supercell calculation.")
 
-    parser_perf_band_edge_state.set_defaults(func=make_perfect_band_edge_state)
+    parser_perf_band_edge_state.set_defaults(func=wrapped_make_perfect_band_edge_state)
 
     # -- band edge orbital infos  ----------------------------------------------
     parser_band_edge_orb_infos = subparsers.add_parser(
@@ -193,7 +235,7 @@ def parse_args_main_vasp(args):
         help="Set when structure_info.json is not available.")
 
     parser_band_edge_orb_infos.set_defaults(
-        func=make_band_edge_orb_infos_and_eigval_plot)
+        func=wrapped_make_band_edge_orb_infos_and_eigval_plot)
 
     # ------------------------------------------------------------------------
     return parser.parse_args(args)

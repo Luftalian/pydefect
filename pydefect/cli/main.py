@@ -6,24 +6,39 @@ import sys
 import warnings
 from pathlib import Path
 
-from monty.serialization import loadfn
 from pydefect import __version__
-from pydefect.analyzer.unitcell import Unitcell
-from pydefect.chem_pot_diag.chem_pot_diag import StandardEnergies
-from pydefect.cli.main_functions import plot_defect_energy, \
-    make_standard_and_relative_energies, make_cpd_and_vertices, \
-    plot_chem_pot_diag, make_supercell, append_interstitial_to_supercell_info, \
-    pop_interstitial_from_supercell_info, make_defect_set, \
-    make_efnv_correction_main_func, make_band_edge_states_main_func, \
-    make_defect_energy_infos_main_func, make_defect_energy_summary_main_func, \
-    calc_defect_structure_info, make_calc_summary_main_func
-from pydefect.cli.main_tools import str_int_to_int
 from pydefect.defaults import defaults
-from pymatgen.core import IStructure, Structure
-from pymatgen.io.vasp.inputs import UnknownPotcarWarning
 
-warnings.simplefilter('ignore', UnknownPotcarWarning)
+def lazy_load_unitcell(path):
+    from pydefect.analyzer.unitcell import Unitcell
+    return Unitcell.from_yaml(path)
 
+def lazy_load_json(path):
+    from monty.serialization import loadfn
+    return loadfn(path)
+
+def lazy_load_structure(path):
+    from pymatgen.core import IStructure, Structure
+    return IStructure.from_file(path)
+
+def lazy_load_structure_mutable(path):
+    from pymatgen.core import Structure
+    return Structure.from_file(path)
+
+def lazy_load_standard_energies(path):
+    from pydefect.chem_pot_diag.chem_pot_diag import StandardEnergies
+    return StandardEnergies.from_yaml(path)
+
+def lazy_str_int_to_int(value):
+    from pydefect.cli.main_tools import str_int_to_int
+    return str_int_to_int(value)
+
+def setup_warnings():
+    try:
+        from pymatgen.io.vasp.inputs import UnknownPotcarWarning
+        warnings.simplefilter('ignore', UnknownPotcarWarning)
+    except ImportError:
+        pass
 
 description = """pydefect is a package that helps researchers to 
 do first-principles point defect calculations with the VASP code."""
@@ -43,34 +58,34 @@ def add_sub_parser(_argparse, name: str):
             help="Directory paths to be parsed.")
     elif name == "unitcell":
         result.add_argument(
-            "-u", "--unitcell", type=Unitcell.from_yaml, required=True,
+            "-u", "--unitcell", type=lazy_load_unitcell, required=True,
             help="Path to the unitcell.yaml file.")
     elif name == "supercell_info":
         result.add_argument(
-            "-s", "--supercell_info", type=loadfn,
+            "-s", "--supercell_info", type=lazy_load_json,
             default="supercell_info.json",
             help="Path to the supercell_info.json file.")
     elif name == "perfect_calc_results":
         result.add_argument(
-            "-pcr", "--perfect_calc_results", required=True, type=loadfn,
+            "-pcr", "--perfect_calc_results", required=True, type=lazy_load_json,
             help="Path to the calc_results.json for the perfect supercell.")
     elif name == "perfect_band_edge_state":
         result.add_argument(
-            "-pbes", "--p_state", required=True, type=loadfn,
+            "-pbes", "--p_state", required=True, type=lazy_load_json,
             help="Path to the perfect_band_edge_state.json.")
     elif name == "no_calc_results_check":
         result.add_argument(
             "-nccr", "--no_calc_results_check",
-            action="store_false",  dest="check_calc_results",
+            action="store_false", dest="check_calc_results",
             help="Select this option when not checking calc_results.json.")
     elif name == "verbose":
         result.add_argument(
             "-v", "--verbose",
-            action="store_true",  dest="verbose",
+            action="store_true", dest="verbose",
             help="Select if one wants to show traceback.")
     elif name == "defect_energy_summary":
         result.add_argument(
-            "-d", "--defect_energy_summary", required=True, type=loadfn,
+            "-d", "--defect_energy_summary", required=True, type=lazy_load_json,
             help="defect_energy_summary.json file path.")
         result.add_argument(
             "--allow_shallow", action="store_true",
@@ -85,6 +100,75 @@ def add_sub_parser(_argparse, name: str):
         raise ValueError
     return result
 
+def wrapped_make_standard_and_relative_energies(args):
+    setup_warnings()
+    from pydefect.cli.main_functions import make_standard_and_relative_energies
+    return make_standard_and_relative_energies(args)
+
+def wrapped_make_cpd_and_vertices(args):
+    setup_warnings()
+    from pydefect.cli.main_functions import make_cpd_and_vertices
+    return make_cpd_and_vertices(args)
+
+def wrapped_plot_chem_pot_diag(args):
+    setup_warnings()
+    from pydefect.cli.main_functions import plot_chem_pot_diag
+    return plot_chem_pot_diag(args)
+
+def wrapped_make_supercell(args):
+    setup_warnings()
+    from pydefect.cli.main_functions import make_supercell
+    return make_supercell(args)
+
+def wrapped_append_interstitial_to_supercell_info(args):
+    setup_warnings()
+    from pydefect.cli.main_functions import append_interstitial_to_supercell_info
+    return append_interstitial_to_supercell_info(args)
+
+def wrapped_pop_interstitial_from_supercell_info(args):
+    setup_warnings()
+    from pydefect.cli.main_functions import pop_interstitial_from_supercell_info
+    return pop_interstitial_from_supercell_info(args)
+
+def wrapped_make_defect_set(args):
+    setup_warnings()
+    from pydefect.cli.main_functions import make_defect_set
+    return make_defect_set(args)
+
+def wrapped_calc_defect_structure_info(args):
+    setup_warnings()
+    from pydefect.cli.main_functions import calc_defect_structure_info
+    return calc_defect_structure_info(args)
+
+def wrapped_make_efnv_correction_main_func(args):
+    setup_warnings()
+    from pydefect.cli.main_functions import make_efnv_correction_main_func
+    return make_efnv_correction_main_func(args)
+
+def wrapped_make_band_edge_states_main_func(args):
+    setup_warnings()
+    from pydefect.cli.main_functions import make_band_edge_states_main_func
+    return make_band_edge_states_main_func(args)
+
+def wrapped_make_defect_energy_infos_main_func(args):
+    setup_warnings()
+    from pydefect.cli.main_functions import make_defect_energy_infos_main_func
+    return make_defect_energy_infos_main_func(args)
+
+def wrapped_make_defect_energy_summary_main_func(args):
+    setup_warnings()
+    from pydefect.cli.main_functions import make_defect_energy_summary_main_func
+    return make_defect_energy_summary_main_func(args)
+
+def wrapped_make_calc_summary_main_func(args):
+    setup_warnings()
+    from pydefect.cli.main_functions import make_calc_summary_main_func
+    return make_calc_summary_main_func(args)
+
+def wrapped_plot_defect_energy(args):
+    setup_warnings()
+    from pydefect.cli.main_functions import plot_defect_energy
+    return plot_defect_energy(args)
 
 dirs_parsers = [add_sub_parser(argparse, name="dirs"),
                 add_sub_parser(argparse, name="verbose")]
@@ -114,7 +198,7 @@ def parse_args_main(args):
         default="composition_energies.yaml",
         help="composition_energies.yaml file name.")
     parser_make_standard_and_relative_energies.set_defaults(
-        func=make_standard_and_relative_energies)
+        func=wrapped_make_standard_and_relative_energies)
 
     # -- make_cpd_and_vertices -------------------------------------------------
     parser_cv = subparsers.add_parser(
@@ -134,7 +218,7 @@ def parse_args_main(args):
         "-e", "--elements", type=str, nargs="+",
         help="Element names considered in chemical potential diagram. Used for "
              "creating the diagram.")
-    parser_cv.set_defaults(func=make_cpd_and_vertices)
+    parser_cv.set_defaults(func=wrapped_make_cpd_and_vertices)
 
     # -- plot_cpd ------------------------------------------------
     parser_pcpd = subparsers.add_parser(
@@ -143,9 +227,9 @@ def parse_args_main(args):
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         aliases=['pc'])
     parser_pcpd.add_argument(
-        "-cpd", "--chem_pot_diag", default="chem_pot_diag.json", type=loadfn,
+        "-cpd", "--chem_pot_diag", default="chem_pot_diag.json", type=lazy_load_json,
         help="Path to the chem_pot_diag.json file.")
-    parser_pcpd.set_defaults(func=plot_chem_pot_diag)
+    parser_pcpd.set_defaults(func=wrapped_plot_chem_pot_diag)
 
     # -- supercell ------------------------------------------------
     parser_supercell = subparsers.add_parser(
@@ -155,7 +239,7 @@ def parse_args_main(args):
         aliases=['s'])
 
     parser_supercell.add_argument(
-        "-p", "--unitcell", type=IStructure.from_file, required=True,
+        "-p", "--unitcell", type=lazy_load_structure, required=True,
         help="Base structure file, which must be the standardized primitive "
              "cell.")
     parser_supercell.add_argument(
@@ -185,7 +269,7 @@ O1:
 Here site_index is based on the given structure.
 """)
 
-    parser_supercell.set_defaults(func=make_supercell)
+    parser_supercell.set_defaults(func=wrapped_make_supercell)
 
     # -- append_interstitial ------------------------------------------------
     parser_append_interstitial = subparsers.add_parser(
@@ -196,7 +280,7 @@ Here site_index is based on the given structure.
         aliases=['ai'])
 
     parser_append_interstitial.add_argument(
-        "-p", "--base_structure", required=True, type=Structure.from_file,
+        "-p", "--base_structure", required=True, type=lazy_load_structure_mutable,
         help="Structure file defining the fractional coordinates such as the "
              "standardized primitive cell.")
     parser_append_interstitial.add_argument(
@@ -208,7 +292,7 @@ Here site_index is based on the given structure.
         help="Information related to the appended interstitial site if exists.")
 
     parser_append_interstitial.set_defaults(
-        func=append_interstitial_to_supercell_info)
+        func=wrapped_append_interstitial_to_supercell_info)
 
     # -- pop_interstitial ------------------------------------------------
     parser_pop_interstitial = subparsers.add_parser(
@@ -226,7 +310,7 @@ Here site_index is based on the given structure.
         help="Pop all interstitials. If this is set, index option is ignored.")
 
     parser_pop_interstitial.set_defaults(
-        func=pop_interstitial_from_supercell_info)
+        func=wrapped_pop_interstitial_from_supercell_info)
 
     # -- defect_set ------------------------------------------------
     parser_defect_set = subparsers.add_parser(
@@ -236,7 +320,7 @@ Here site_index is based on the given structure.
         aliases=['ds'])
 
     parser_defect_set.add_argument(
-        "-o", "--oxi_states", nargs="+", type=str_int_to_int,
+        "-o", "--oxi_states", nargs="+", type=lazy_str_int_to_int,
         help="Oxidation states in integers, e.g., Mg 2 O -2.")
     parser_defect_set.add_argument(
         "-d", "--dopants", nargs="+", type=str,
@@ -246,7 +330,7 @@ Here site_index is based on the given structure.
         help="Keywords used to screen the target defects. Since, the re.search "
              "is used inside, Regular expression can be used. ")
 
-    parser_defect_set.set_defaults(func=make_defect_set)
+    parser_defect_set.set_defaults(func=wrapped_make_defect_set)
 
     # -- defect structure info ------------------------------------------------
     parser_defect_structure_info = subparsers.add_parser(
@@ -265,7 +349,7 @@ Here site_index is based on the given structure.
         help="Tolerance for determining point groups in the final "
              "structures. Note that point groups in the initial structures are "
              "set via defect_entry.json files.")
-    parser_defect_structure_info.set_defaults(func=calc_defect_structure_info)
+    parser_defect_structure_info.set_defaults(func=wrapped_calc_defect_structure_info)
 
     # -- efnv correction ------------------------------------------------
     parser_efnv = subparsers.add_parser(
@@ -283,7 +367,7 @@ Here site_index is based on the given structure.
     parser_efnv.add_argument(
         "--calc_all_sites", action="store_true",
         help="Set if one wants to calculate the potential at all the sites.")
-    parser_efnv.set_defaults(func=make_efnv_correction_main_func)
+    parser_efnv.set_defaults(func=wrapped_make_efnv_correction_main_func)
 
     # -- band edge states ------------------------------------------------
     parser_band_edge_states = subparsers.add_parser(
@@ -293,7 +377,7 @@ Here site_index is based on the given structure.
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         aliases=['bes'])
 
-    parser_band_edge_states.set_defaults(func=make_band_edge_states_main_func)
+    parser_band_edge_states.set_defaults(func=wrapped_make_band_edge_states_main_func)
 
     # -- defect energy infos ---------------------------------------------------
     parser_defect_energy_infos = subparsers.add_parser(
@@ -303,11 +387,11 @@ Here site_index is based on the given structure.
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         aliases=['dei'])
     parser_defect_energy_infos.add_argument(
-        "-s", "--std_energies", required=True, type=StandardEnergies.from_yaml,
+        "-s", "--std_energies", required=True, type=lazy_load_standard_energies,
         help="Path to the StandardEnergies.yaml file.")
 
     parser_defect_energy_infos.set_defaults(
-        func=make_defect_energy_infos_main_func)
+        func=wrapped_make_defect_energy_infos_main_func)
 
     # -- defect energy summary -------------------------------------------------
     parser_defect_energy_summary = subparsers.add_parser(
@@ -321,7 +405,7 @@ Here site_index is based on the given structure.
         help="Path to the target_vertices.yaml file.")
 
     parser_defect_energy_summary.set_defaults(
-        func=make_defect_energy_summary_main_func)
+        func=wrapped_make_defect_energy_summary_main_func)
 
     # -- calc summary -------------------------------------------------
     parser_calc_summary = subparsers.add_parser(
@@ -332,7 +416,7 @@ Here site_index is based on the given structure.
         aliases=['cs'])
 
     parser_calc_summary.set_defaults(
-        func=make_calc_summary_main_func)
+        func=wrapped_make_calc_summary_main_func)
 
     # -- plot defect formation energy ------------------------------------------
     parser_plot_energy = subparsers.add_parser(
@@ -354,7 +438,7 @@ Here site_index is based on the given structure.
     parser_plot_energy.add_argument(
         "--plot_all_energies", dest="plot_all_energies", action="store_true",
         help="Plot energies of all charge states including unstable ones.")
-    parser_plot_energy.set_defaults(func=plot_defect_energy)
+    parser_plot_energy.set_defaults(func=wrapped_plot_defect_energy)
     # ------------------------------------------------------------------------
     return parser.parse_args(args)
 
