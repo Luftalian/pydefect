@@ -3,6 +3,14 @@
 [![CircleCI](https://circleci.com/gh/kumagai-group/pydefect/tree/master.svg?style=shield)](https://circleci.com/gh/kumagai-group/pydefect/tree/master)
 
 pydefect
+
+> [!IMPORTANT]
+> There is a difference in the pydefect implementation.
+> 
+> The `main` branch contains the updated changes in this repository.
+> 
+> The `master` branch is identical to the original [kumagai-group/pydefect](https://github.com/kumagai-group/pydefect) repository.
+
 =========
 Pydefect is a robust, open-source Python library for point-defect calculations in non-metallic solids 
 based on first-principle calculations with the [VASP](https://www.vasp.at) code.
