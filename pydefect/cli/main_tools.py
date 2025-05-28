@@ -3,6 +3,8 @@
 import traceback
 from pathlib import Path
 from typing import List, Callable, Any
+import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import numpy as np
 from vise.util.logger import get_logger
@@ -38,9 +40,12 @@ def str_int_to_int(x):
 def parse_dirs(dirs: List[Path],
                _inner_function: Callable[[Path], Any],
                verbose: bool = False,
-               output_filename: str = None):
+               output_filename: str = None,
+               max_workers: int = 1):
     failed_directories = []
     parsed_results = []
+
+    targets = []
     for _dir in dirs:
         if _dir.is_file():
             logger.info(f"{_dir} is a file, so skipped.")
@@ -48,24 +53,38 @@ def parse_dirs(dirs: List[Path],
         if output_filename and (_dir / output_filename).exists():
             logger.info(f"In {_dir}, {output_filename} already exists.")
             continue
+        targets.append(_dir)
 
-        logger.info(f"Parsing data in {_dir} ...")
-        try:
-            _return = _inner_function(_dir)
-            if _return:
-                parsed_results.append(_return)
-        except Exception as e:
-            if verbose:
-                print(traceback.print_exc())
-            else:
-                try:
-                    print(e.args[1])
-                except IndexError:
-                    pass
+    if not targets:
+        logger.info("No valid directories to process.")
+        return None
 
-            logger.warning(f"Failing parsing {_dir} ...")
-            failed_directories.append(str(_dir))
-            continue
+    def _wrapped(dir_path: Path):
+        logger.info(f"Parsing data in {dir_path} ...")
+        return _inner_function(dir_path)
+
+    max_workers = min(len(targets), os.cpu_count() or 1)
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_dir = {executor.submit(_wrapped, d): d for d in targets}
+
+        for future in as_completed(future_to_dir):
+            _dir = future_to_dir[future]
+            try:
+                _return = future.result()
+                if _return:
+                    parsed_results.append(_return)
+            except Exception as e:
+                if verbose:
+                    traceback.print_exc()
+                else:
+                    try:
+                        print(e.args[1])
+                    except IndexError:
+                        pass
+                logger.warning(f"Failing parsing {_dir} ...")
+                failed_directories.append(str(_dir))
+
     if failed_directories:
         failed_dir_string = '\n'.join(failed_directories)
         logger.warning(f"Failed directories are:\n{failed_dir_string}")
