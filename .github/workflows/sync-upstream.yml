@@ -19,3 +19,8 @@ jobs:
         with:
           token: ${{ secrets.PAT }}
           branch: master
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.PAT }}
+          branch: main
