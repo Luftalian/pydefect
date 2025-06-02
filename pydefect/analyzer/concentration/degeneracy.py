@@ -89,7 +89,11 @@ class MakeDegeneracy:
     def mag_to_spin_degeneracy(self, mag: float) -> int:
         rounded_mag = round(mag)
         if abs(rounded_mag - mag) > self._int_threshold:
-            raise ValueError
+            # raise ValueError
+            Warning = (
+                f"Magnetization {mag} is not close to an integer. "
+                f"Rounded value is {rounded_mag}. "
+                "This may cause unexpected results.")
         return 2 * abs(rounded_mag) + 1
 
     @property
