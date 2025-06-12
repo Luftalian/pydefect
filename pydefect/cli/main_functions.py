@@ -280,6 +280,7 @@ def plot_defect_energy(args):
     plotter = DefectEnergyMplPlotter(
         defect_energy_summary=args.defect_energy_summary,
         chem_pot_label=args.label,
+        x_range=args.x_range,
         y_range=args.y_range,
         allow_shallow=args.allow_shallow,
         with_corrections=args.with_corrections,
