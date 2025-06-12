@@ -86,6 +86,7 @@ class DefectEnergyPlotter:
         self._vline_threshold = vline_threshold
         self._x_unit = x_unit
         self._y_unit = y_unit
+        self._defect_energy_summary = defect_energy_summary
         self._defect_energies \
             = defect_energy_summary.screened_defect_energies(allow_shallow)
 
@@ -108,6 +109,7 @@ class DefectEnergyMplPlotter(DefectEnergyPlotter):
     def construct_plot(self):
         self._add_energies()
         self._add_band_edges()
+        self.__add_band_edges_unitcell()
         self._set_x_range()
         self._set_y_range()
         self._set_labels()
@@ -169,7 +171,9 @@ class DefectEnergyMplPlotter(DefectEnergyPlotter):
         axis.tick_params(labelsize=self._mpl_defaults.tick_label_size)
 
     def _add_band_edges(self):
-        if self._supercell_vbm > self._vline_threshold:
+        print("supercell VBM:", self._supercell_vbm)
+        print("supercell CBM:", self._supercell_cbm)
+        if self._supercell_vbm > self._x_range[0] + self._vline_threshold:
             self.plt.axvline(x=self._supercell_vbm,
                              **self._mpl_defaults.vline)
             plt.text(self._supercell_vbm, self._y_range[1], 'supercell VBM',
@@ -178,6 +182,25 @@ class DefectEnergyMplPlotter(DefectEnergyPlotter):
         if self._supercell_cbm < self._x_range[1] - self._vline_threshold:
             self.plt.axvline(x=self._supercell_cbm,
                              **self._mpl_defaults.vline)
-            plt.text(self._supercell_cbm, self._y_range[1], 'supercell',
+            plt.text(self._supercell_cbm, self._y_range[1], 'supercell CBM',
                      size=8, ha='center', va='center', rotation='vertical',
                      backgroundcolor='white')
+
+    def __add_band_edges_unitcell(self):
+        if hasattr(self, '_defect_energy_summary'):
+            # Create modified vline style for unitcell band edges
+            unitcell_vline = self._mpl_defaults.vline.copy()
+            unitcell_vline["color"] = "red"  # Different color
+            unitcell_vline["linestyle"] = "--"  # Different line style
+
+            # self._defect_energy_summary.vbmは存在せず、この値は常に0である。
+            if 0 > self._x_range[0] + self._vline_threshold:
+                self.plt.axvline(x=0, **unitcell_vline)
+                plt.text(0, self._y_range[1] - (self._y_range[1] - self._y_range[0]) / 5, 'unitcell VBM',
+                         size=8, ha='center', va='center', rotation='vertical', color='red',
+                         backgroundcolor='none')
+            if self._defect_energy_summary.cbm < self._x_range[1] - self._vline_threshold:
+                self.plt.axvline(x=self._defect_energy_summary.cbm, **unitcell_vline)
+                plt.text(self._defect_energy_summary.cbm, self._y_range[1] - (self._y_range[1] - self._y_range[0]) / 5, 'unitcell CBM',
+                         size=8, ha='center', va='center', rotation='vertical', color='red',
+                         backgroundcolor='none')

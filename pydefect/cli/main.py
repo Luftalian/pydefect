@@ -427,6 +427,9 @@ Here site_index is based on the given structure.
         aliases=['pe'])
 
     parser_plot_energy.add_argument(
+        "-x", "--x_range", nargs=2, type=float,
+        help="Energy range in x-axis")
+    parser_plot_energy.add_argument(
         "-y", "--y_range", nargs=2, type=float,
         help="Energy range in y-axis")
     parser_plot_energy.add_argument(
