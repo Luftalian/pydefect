@@ -44,7 +44,7 @@ using the following command in the :code:`absorption/` directory.
     pydefect cr -d .
 
 
-And, wee obtain :code:`gkfo_correction.pdf` and :code:`gkfo_correction.json` files with the following command.
+And we obtain :code:`gkfo_correction.pdf` and :code:`gkfo_correction.json` files with the following command.
 
 ::
 
