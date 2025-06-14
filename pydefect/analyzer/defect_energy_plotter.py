@@ -6,11 +6,14 @@ from typing import List, Optional, Tuple
 from adjustText import adjust_text
 from labellines import labelLines
 from matplotlib import pyplot as plt
+from vise.util.logger import get_logger
 from pydefect.analyzer.defect_energy import DefectEnergySummary
 from pydefect.analyzer.transition_levels import make_transition_levels
 from pydefect.defaults import defaults
 from pydefect.util.prepare_names import prettify_names
 from vise.util.matplotlib import float_to_int_formatter
+
+logger = get_logger(__name__)
 
 
 class DefectEnergiesMplSettings:
@@ -171,8 +174,8 @@ class DefectEnergyMplPlotter(DefectEnergyPlotter):
         axis.tick_params(labelsize=self._mpl_defaults.tick_label_size)
 
     def _add_band_edges(self):
-        print("supercell VBM:", self._supercell_vbm)
-        print("supercell CBM:", self._supercell_cbm)
+        logger.debug("supercell VBM: %s", self._supercell_vbm)
+        logger.debug("supercell CBM: %s", self._supercell_cbm)
         if self._supercell_vbm > self._x_range[0] + self._vline_threshold:
             self.plt.axvline(x=self._supercell_vbm,
                              **self._mpl_defaults.vline)
