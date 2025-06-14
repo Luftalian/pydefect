@@ -124,7 +124,9 @@ def perturb_structure(structure: Structure, center: List[float], cutoff: float
 
 
 def random_3d_vector(max_distance: float) -> Tuple[np.ndarray, float]:
-    """Random 3d vector with uniform spherical distribution with 0 <= norm <= 1.
+    """Random 3d vector from a uniform spherical distribution.
+
+    Returns a random vector whose norm ranges from 0 up to ``max_distance``.
     stackoverflow.com/questions/5408276/python-uniform-spherical-distribution
     """
     phi = np.random.uniform(0, np.pi * 2)
