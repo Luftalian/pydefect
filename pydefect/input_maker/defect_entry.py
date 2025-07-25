@@ -90,7 +90,9 @@ class DefectEntry(MSONable, ToJsonFileMixIn):
         return "_".join([self.name, str(self.charge)])
 
     def to_prior_info(self, filename):
-        d = {"charge": self.charge}
+        # Ensure charge is a builtin int, not a ruamel ScalarInt
+        charge_value = int(self.charge) if self.charge is not None else None
+        d = {"charge": charge_value}
         Path(filename).write_text(yaml.dump(d))
 
     def __str__(self):
