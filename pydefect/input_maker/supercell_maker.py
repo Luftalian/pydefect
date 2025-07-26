@@ -26,6 +26,7 @@ class SupercellMaker:
                  symprec: float = defaults.symmetry_length_tolerance,
                  angle_tolerance: float = defaults.symmetry_angle_tolerance,
                  raise_error: bool = False,
+                 no_use_conventional: bool = False,
                  **supercell_kwargs):
 
         self.primitive_structure = primitive_structure
@@ -49,22 +50,39 @@ class SupercellMaker:
                 f"{self.symmetrizer.primitive}"]))
             if raise_error:
                 raise NotPrimitiveError
+            if no_use_conventional:
+                raise NotPrimitiveError(
+                    "When --no_use_conventional is set, the input structure must be primitive. "
+                    "Because I have not checked the implementation thoroughly yet.")
 
         self.sg_symbol = self.symmetrizer.spglib_sym_data.international
-        self.conv_structure = self.symmetrizer.conventional
-        crystal_system, center = str(self.symmetrizer.bravais)
+        crystal_system = None
+        if no_use_conventional:
+            # primitive_structure is used as conventional cell.
+            self.conv_structure = primitive_structure
+            self.conv_multiplicity = 1
+            self.conv_trans_mat = np.eye(3)
+            crystal_system = None
+        else:
+            self.conv_structure = self.symmetrizer.conventional
+            crystal_system, center = str(self.symmetrizer.bravais)
 
-        centering = Centering(center)
-        self.conv_multiplicity = centering.conv_multiplicity
-        self.conv_trans_mat = centering.primitive_to_conv
+            centering = Centering(center)
+            self.conv_multiplicity = centering.conv_multiplicity
+            self.conv_trans_mat = centering.primitive_to_conv
 
         self._matrix = matrix
         self._supercell_kwargs = supercell_kwargs
 
-        self._generate_supercell(crystal_system)
+        self._generate_supercell(crystal_system, no_use_conventional)
         self._generate_supercell_info()
 
-    def _generate_supercell(self, crystal_system):
+    def _generate_supercell(self, crystal_system, no_use_conventional: bool = False):
+        if no_use_conventional and not self._matrix:
+            raise ValueError(
+                "When --no_use_conventional is set, "
+                "--matrix must be set. Because I have not checked the "
+                "implementation thoroughly yet.")
         if self._matrix:
             self.supercell = Supercell(self.conv_structure, self._matrix)
         else:

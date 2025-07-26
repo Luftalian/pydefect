@@ -117,6 +117,16 @@ def make_supercell(args):
         supercell_maker = ManualSupercellMaker
         kwargs["sites"] = make_sites_from_yaml_file(args.sites_yaml_filename)
 
+    if args.no_use_conventional:
+        # SupercellMaker only supports this option.
+        if not args.analyze_symmetry:
+            raise ValueError(
+                "When --no_use_conventional is set, --no_analyze_symmetry must not be set. "
+                "Because I have not checked the implementation thoroughly yet.")
+        kwargs["no_use_conventional"] = True
+    else:
+        kwargs["no_use_conventional"] = False
+
     if args.matrix:
         matrix = sanitize_matrix(args.matrix)
         maker = supercell_maker(args.unitcell, matrix=matrix, **kwargs)

@@ -244,7 +244,8 @@ def parse_args_main(args):
              "cell.")
     parser_supercell.add_argument(
         "--matrix", nargs="+", type=int,
-        help="Supercell matrix applied to the conventional cell. "
+        help="Supercell matrix applied to the conventional cell if --no_use_conventional is not set, "
+             "If --no_use_conventional is set, this matrix is applied to the primitive cell. "
              "1, 3 or 9 components are accepted.")
     parser_supercell.add_argument(
         "--min_atoms", dest="min_num_atoms", default=50, type=int,
@@ -268,6 +269,12 @@ O1:
   site_symmetry: Pm-3m
 Here site_index is based on the given structure.
 """)
+    parser_supercell.add_argument(
+        "--no_use_conventional", action="store_true",
+        help="Skip conventional cell standardization and build the supercell "
+             "directly from the input structure. If this is set, "
+             "--no_analyze_symmetry must not be set. Because I have not checked the implementation thoroughly yet."
+             "--matrix must be set when this option is set. Because I have not checked the implementation thoroughly yet.")
 
     parser_supercell.set_defaults(func=wrapped_make_supercell)
 
