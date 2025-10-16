@@ -1,28 +1,50 @@
-name: Update fork
+name: Sync upstream and create PR to main
 on:
   schedule:
-    - cron:  '0 0 * * *'
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
 jobs:
-  updateFork:
+  sync-upstream:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: Luftalian/pydefect
           fetch-depth: 0
           ref: master
-      - name: Reset the default branch with upstream changes
+
+      - name: Set up Git user
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Add upstream and fetch
         run: |
           git remote add upstream https://github.com/kumagai-group/pydefect.git
-          git fetch upstream master:upstream-master
-          git reset --hard upstream-master
-      - name: Create Pull Request
+          git fetch upstream
+
+      - name: Merge upstream/master into local master
+        run: |
+          git checkout master
+          git merge --ff-only upstream/master || echo "No upstream changes to merge."
+          git push origin master
+
+      - name: Check if master and main are different
+        id: diffcheck
+        run: |
+          git fetch origin main
+          if git diff --quiet origin/main..origin/master; then
+            echo "NO_DIFF=true" >> $GITHUB_ENV
+          else
+            echo "NO_DIFF=false" >> $GITHUB_ENV
+          fi
+
+      - name: Create Pull Request from master to main
+        if: env.NO_DIFF == 'false'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.PAT }}
+          base: main
           branch: master
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.PAT }}
-          branch: main
+          title: 'Sync master with upstream and propose merge to main'
+          body: 'This PR brings in changes from upstream/master via our master branch.'
