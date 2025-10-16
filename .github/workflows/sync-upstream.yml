@@ -32,6 +32,9 @@ jobs:
         run: |
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
 
+      - name: Prune origin
+        run: git remote prune origin
+
       - name: Push master to origin
         run: git push origin master
 
