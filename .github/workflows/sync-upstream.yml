@@ -27,7 +27,13 @@ jobs:
         run: |
           git checkout master
           git merge --ff-only upstream/master || echo "No upstream changes to merge."
-          git push origin master
+
+      - name: Set authenticated remote URL
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+
+      - name: Push master to origin
+        run: git push origin master
 
       - name: Check if master and main are different
         id: diffcheck
